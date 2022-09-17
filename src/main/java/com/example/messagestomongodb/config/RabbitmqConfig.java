@@ -10,6 +10,7 @@ import org.springframework.amqp.rabbit.connection.CachingConnectionFactory;
 import org.springframework.amqp.rabbit.connection.ConnectionFactory;
 import org.springframework.amqp.rabbit.core.RabbitTemplate;
 import org.springframework.amqp.support.converter.Jackson2JsonMessageConverter;
+import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 
@@ -19,6 +20,10 @@ public class RabbitmqConfig {
 
     public static final String TOPIC_EXCHANGE_NAME = "covid-exchange";
     public static final String QUEUE_NAME = "cases-entity";
+
+    public static final String DEAD_LETTER_EXCHANGE = "dead-letter-exchange";
+    public static final String DEAD_LETTER_QUEUE = "dlq.cases-entity";
+    public static final String DEAD_LETTER_ROUTING_KEY = "dlq" + QUEUE_NAME;
 
     @Bean
     Queue queue(){
@@ -31,9 +36,25 @@ public class RabbitmqConfig {
     }
 
     @Bean
-    Binding binding(Queue queue, TopicExchange topicExchange){
+    Binding binding(Queue queue, @Qualifier("exchange") TopicExchange topicExchange){
         return BindingBuilder.bind(queue).to(topicExchange).with("#");
     }
+
+    @Bean
+    Queue deadLetterQueue(){
+        return new Queue(DEAD_LETTER_QUEUE,false);
+    }
+
+    @Bean
+    TopicExchange deadLetterExchange(){
+        return new TopicExchange(DEAD_LETTER_EXCHANGE);
+    }
+
+    @Bean
+    Binding deadLetterBinding(@Qualifier("deadLetterQueue") Queue queue, @Qualifier("deadLetterExchange") TopicExchange exchange){
+        return BindingBuilder.bind(queue).to(exchange).with(DEAD_LETTER_ROUTING_KEY);
+    }
+
 
     @Bean
     public RabbitTemplate publishingRabbitTemplate(final ConnectionFactory connectionFactory) {
@@ -44,8 +65,7 @@ public class RabbitmqConfig {
     }
 
     @Bean
-    public Jackson2JsonMessageConverter jsonConverter() {
-        ObjectMapper mapper = new ObjectMapper();
+    public Jackson2JsonMessageConverter jsonConverter(ObjectMapper mapper) {
         return new Jackson2JsonMessageConverter(mapper);
     }
 

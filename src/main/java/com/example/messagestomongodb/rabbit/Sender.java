@@ -5,6 +5,7 @@ import com.example.messagestomongodb.csvparse.CSVParse;
 import lombok.RequiredArgsConstructor;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.amqp.core.Message;
 import org.springframework.amqp.rabbit.core.RabbitTemplate;
 import org.springframework.boot.CommandLineRunner;
 import org.springframework.stereotype.Service;
@@ -30,6 +31,10 @@ public class Sender implements CommandLineRunner{
 //        CovidCases cases = new CovidCases(1,"Continent","Country","22/09/2022",1);
 //        rabbitTemplate.convertAndSend(RabbitmqConfig.TOPIC_EXCHANGE_NAME,"#",cases);
         log.info("message sent...");
+    }
+
+    public void dlqMessagesWithDuplicateIds(final Message message){
+        rabbitTemplate.send(RabbitmqConfig.DEAD_LETTER_EXCHANGE,RabbitmqConfig.DEAD_LETTER_ROUTING_KEY,message);
     }
 
 }
