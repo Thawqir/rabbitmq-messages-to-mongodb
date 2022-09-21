@@ -10,6 +10,7 @@ import org.springframework.amqp.rabbit.connection.CachingConnectionFactory;
 import org.springframework.amqp.rabbit.connection.ConnectionFactory;
 import org.springframework.amqp.rabbit.core.RabbitTemplate;
 import org.springframework.amqp.support.converter.Jackson2JsonMessageConverter;
+import org.springframework.amqp.support.converter.MessageConverter;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -57,23 +58,26 @@ public class RabbitmqConfig {
 
 
     @Bean
-    public RabbitTemplate publishingRabbitTemplate(final ConnectionFactory connectionFactory) {
+    public RabbitTemplate publishingRabbitTemplate(final ConnectionFactory connectionFactory,
+                                                   MessageConverter messageConverter) {
         final RabbitTemplate rabbitTemplate = new RabbitTemplate(connectionFactory);
-        rabbitTemplate.setMessageConverter(jsonConverter());
+        rabbitTemplate.setMessageConverter(messageConverter);
         rabbitTemplate.setChannelTransacted(true);
         return rabbitTemplate;
     }
 
     @Bean
-    public Jackson2JsonMessageConverter jsonConverter(ObjectMapper mapper) {
-        return new Jackson2JsonMessageConverter(mapper);
+    public MessageConverter jsonConverter() {
+        return new Jackson2JsonMessageConverter();
     }
 
     @Bean
     public ConnectionFactory connectionFactory(){
         CachingConnectionFactory connectionFactory = new CachingConnectionFactory();
-        connectionFactory.setHost("localhost");
         connectionFactory.setPort(5672);
+        connectionFactory.setHost("localhost");
         return connectionFactory;
     }
+
+
 }
