@@ -7,7 +7,6 @@ import lombok.RequiredArgsConstructor;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.amqp.rabbit.annotation.RabbitListener;
-import org.springframework.amqp.rabbit.core.RabbitTemplate;
 import org.springframework.data.mongodb.repository.config.EnableMongoRepositories;
 import org.springframework.stereotype.Component;
 
@@ -17,7 +16,6 @@ import org.springframework.stereotype.Component;
 public class Receiver {
 
     private final CasesRepository casesRepository;
-    private final RabbitTemplate rabbitTemplate;
 
     private static final Logger log = LoggerFactory.getLogger(Receiver.class);
 

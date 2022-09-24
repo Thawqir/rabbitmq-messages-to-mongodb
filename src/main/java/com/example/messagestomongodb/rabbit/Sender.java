@@ -7,7 +7,6 @@ import com.example.messagestomongodb.repository.CasesRepository;
 import lombok.RequiredArgsConstructor;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.amqp.core.Message;
 import org.springframework.amqp.rabbit.core.RabbitTemplate;
 import org.springframework.boot.CommandLineRunner;
 import org.springframework.stereotype.Service;
@@ -23,15 +22,6 @@ public class Sender implements CommandLineRunner{
 
     private static final Logger log = LoggerFactory.getLogger(Sender.class);
 
-//    @Override
-//    public void run(String... args) throws Exception {
-//
-//        log.info("sending message...");
-//        csvParse.parseCSVFileIntoList()
-//                                .forEach(message1 ->
-//                                        rabbitTemplate.convertAndSend(RabbitmqConfig.TOPIC_EXCHANGE_NAME,"#",message1));
-//    }
-
     @Override
     public void run(String... args) throws Exception {
 
@@ -42,8 +32,7 @@ public class Sender implements CommandLineRunner{
                         rabbitTemplate.convertAndSend(RabbitmqConfig.DEAD_LETTER_EXCHANGE, RabbitmqConfig.DEAD_LETTER_ROUTING_KEY, message1);
                         log.info("Message sent to dlq with duplicate id: {}",message1.getId());
                     } else {
-                        rabbitTemplate.convertAndSend(RabbitmqConfig.DEAD_LETTER_EXCHANGE, RabbitmqConfig.DEAD_LETTER_ROUTING_KEY, message1);
-//                        rabbitTemplate.convertAndSend(RabbitmqConfig.TOPIC_EXCHANGE_NAME,"#",message1);
+                        rabbitTemplate.convertAndSend(RabbitmqConfig.TOPIC_EXCHANGE_NAME,"#",message1);
                         log.info("message sent");
                     }
                 });
@@ -52,7 +41,7 @@ public class Sender implements CommandLineRunner{
     public boolean checkForDuplicateRecords(Integer id, CovidCases cases){
         Integer existingId = casesRepository.returnIntegerFromDB(id);
 
-        if (cases.getId().equals(existingId)){
+        if (existingId.equals(1)){
             log.info("existingid is {} and casesid is {}",existingId,cases.getId());
             return true;
         }
@@ -60,6 +49,3 @@ public class Sender implements CommandLineRunner{
     }
 
 }
-
-//        CovidCases cases = new CovidCases(1,"Continent","Country","22/09/2022",1);
-//        rabbitTemplate.convertAndSend(RabbitmqConfig.TOPIC_EXCHANGE_NAME,"#",cases);

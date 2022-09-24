@@ -10,7 +10,7 @@ import java.util.Optional;
 @Repository
 public interface CasesRepository extends MongoRepository<CovidCases, Integer> {
 
-    @Query(value = "{ '_id' : ?0 }", fields = "{ '_id' : 1}")
+    @Query(value = "{ '_id' : ?0 }", fields = "{ '_id' : 1}", count=true)
     Integer returnIntegerFromDB(Integer id);
 
 }
